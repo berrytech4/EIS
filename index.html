@@ -1,0 +1,476 @@
+<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EIS Pickup System</title>
+
+    <style>
+      /* ======================
+   BACKGROUND
+====================== */
+
+      body {
+        margin: 0;
+        font-family:
+          Segoe UI,
+          sans-serif;
+        background: url("eagle.jpg") no-repeat center center fixed;
+        background-size: cover;
+        position: relative;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: -1;
+      }
+
+      /* HEADER */
+      header {
+        text-align: center;
+        padding: 20px;
+        font-size: 22px;
+        font-weight: bold;
+        background: white;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+      }
+
+      /* TABS */
+      .tabs {
+        display: flex;
+        justify-content: center;
+        margin: 20px;
+      }
+
+      .tabs button {
+        padding: 10px 25px;
+        border: none;
+        background: #e5e7eb;
+        cursor: pointer;
+        margin: 0 5px;
+        border-radius: 8px;
+        font-weight: bold;
+      }
+
+      .tabs button.active {
+        background: #4f46e5;
+        color: white;
+      }
+
+      /* CARD */
+      .card {
+        background: white;
+        max-width: 550px;
+        margin: auto;
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      }
+
+      /* INPUTS */
+      input,
+      select {
+        width: 100%;
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+      }
+
+      /* BUTTON */
+      button.action {
+        width: 100%;
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        background: #4f46e5;
+        color: white;
+        cursor: pointer;
+        font-weight: bold;
+        position: relative;
+      }
+
+      button.action:disabled {
+        background: gray;
+        cursor: not-allowed;
+      }
+
+      /* SPINNER */
+      .spinner {
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-top: 3px solid white;
+        border-radius: 50%;
+        width: 18px;
+        height: 18px;
+        animation: spin 1s linear infinite;
+        position: absolute;
+        right: 15px;
+        top: 12px;
+        display: none;
+      }
+
+      @keyframes spin {
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* SUCCESS CHECK */
+      .checkmark {
+        display: none;
+        font-size: 40px;
+        color: limegreen;
+        text-align: center;
+        animation: pop 0.4s ease;
+      }
+
+      @keyframes pop {
+        0% {
+          transform: scale(0);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      /* TABLE */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+      }
+
+      th,
+      td {
+        padding: 10px;
+        border-bottom: 1px solid #eee;
+      }
+
+      .status-waiting {
+        background: orange;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 6px;
+      }
+
+      .status-picked {
+        background: green;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 6px;
+      }
+
+      .mark-btn {
+        background: #4f46e5;
+        color: white;
+        border: none;
+        padding: 6px 10px;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+
+      .mark-btn:disabled {
+        background: gray;
+      }
+
+      /* REFRESH ICON */
+      .refresh-icon {
+        width: 18px;
+        height: 18px;
+        border: 3px solid #ccc;
+        border-top: 3px solid #4f46e5;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        display: inline-block;
+        margin-left: 10px;
+        vertical-align: middle;
+      }
+
+      @media (max-width: 600px) {
+        .card {
+          margin: 10px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>🏫 EIS Pickup System</header>
+
+    <div class="tabs">
+      <button id="parentTab" class="active" onclick="switchTab('parent')">
+        Parent Portal
+      </button>
+      <button id="teacherTab" onclick="switchTab('teacher')">
+        Teacher Portal
+      </button>
+    </div>
+
+    <!-- PARENT -->
+    <div id="parentSection" class="card">
+      <h3>Parent Pickup Form</h3>
+
+      <input
+        id="parentName"
+        placeholder="Parent Name"
+        oninput="validateForm()"
+      />
+      <input
+        id="studentName"
+        placeholder="Student Name"
+        oninput="validateForm()"
+      />
+
+      <select id="className" onchange="validateForm()">
+        <option value="">Select Class</option>
+        <option>Nursery 1</option>
+        <option>Nursery 2</option>
+        <option>KG 1</option>
+        <option>Basic 1</option>
+        <option>Basic 2</option>
+        <option>Basic 3</option>
+        <option>Basic 4</option>
+        <option>Basic 5</option>
+        <option>Basic 6</option>
+        <option>Basic 7</option>
+        <option>Basic 8</option>
+        <option>Basic 9</option>
+      </select>
+
+      <button id="submitBtn" class="action" onclick="submitForm()" disabled>
+        See you in 5 minutes
+        <div class="spinner" id="parentSpinner"></div>
+      </button>
+
+      <div class="checkmark" id="successCheck">✔</div>
+    </div>
+
+    <!-- TEACHER -->
+    <div id="teacherSection" class="card" style="display: none">
+      <div id="teacherAuthBox">
+        <h3>Teacher Login</h3>
+        <input
+          type="password"
+          id="teacherPassword"
+          placeholder="Enter Password"
+        />
+        <button class="action" onclick="verifyTeacher()">
+          Login
+          <div class="spinner" id="loginSpinner"></div>
+        </button>
+      </div>
+
+      <div id="teacherDashboard" style="display: none">
+        <button onclick="logout()">Logout</button>
+
+        <select id="teacherClass">
+          <option>Nursery 1</option>
+          <option>Nursery 2</option>
+          <option>KG 1</option>
+          <option>KG 2</option>
+          <option>Basic 1</option>
+          <option>Basic 2</option>
+          <option>Basic 3</option>
+          <option>Basic 4</option>
+          <option>Basic 5</option>
+          <option>Basic 6</option>
+          <option>Basic 7</option>
+          <option>Basic 8</option>
+          <option>Basic 9</option>
+        </select>
+
+        <button class="action" onclick="loadDashboard()">
+          Refresh <span id="refreshIcon"></span>
+        </button>
+
+        <div id="dashboardData"></div>
+      </div>
+    </div>
+
+    <audio id="notifySound">
+      <source
+        src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"
+      />
+    </audio>
+
+    <script>
+      const WEB_APP_URL =
+        "https://script.google.com/macros/s/AKfycbxuiymCVePkpfavwYIh5SCOeqHB3JdwrMuzL2SNIwqMrZ0nEuqZSvggnr5u1WQeMD7QXA/exec";
+
+      let teacherAuthenticated = false;
+      let logoutTimer = null;
+      let autoRefresh = null;
+      let lastRowCount = 0;
+
+      /* FORM VALIDATION */
+      function validateForm() {
+        if (parentName.value && studentName.value && className.value) {
+          submitBtn.disabled = false;
+        } else {
+          submitBtn.disabled = true;
+        }
+      }
+
+      /* PARENT SUBMIT */
+      async function submitForm() {
+        parentSpinner.style.display = "block";
+
+        await fetch(WEB_APP_URL, {
+          method: "POST",
+          body: JSON.stringify({
+            parentName: parentName.value,
+            studentName: studentName.value,
+            className: className.value,
+          }),
+        });
+
+        parentSpinner.style.display = "none";
+        successCheck.style.display = "block";
+
+        setTimeout(() => {
+          successCheck.style.display = "none";
+        }, 2000);
+
+        parentName.value = "";
+        studentName.value = "";
+        className.value = "";
+        validateForm();
+      }
+
+      /* VERIFY TEACHER */
+      async function verifyTeacher() {
+        loginSpinner.style.display = "block";
+
+        const response = await fetch(WEB_APP_URL, {
+          method: "POST",
+          body: JSON.stringify({
+            action: "verifyPassword",
+            password: teacherPassword.value,
+          }),
+        });
+
+        const result = await response.json();
+        loginSpinner.style.display = "none";
+
+        if (result.success) {
+          teacherAuthenticated = true;
+          teacherAuthBox.style.display = "none";
+          teacherDashboard.style.display = "block";
+          startAutoLogout();
+          startAutoRefresh();
+        } else {
+          alert("Wrong Password");
+        }
+      }
+
+      /* LOAD DASHBOARD */
+      async function loadDashboard() {
+        if (!teacherAuthenticated) return;
+
+        refreshIcon.innerHTML = "<span class='refresh-icon'></span>";
+
+        const response = await fetch(
+          WEB_APP_URL + "?className=" + teacherClass.value,
+        );
+        const data = await response.json();
+
+        if (data.length > lastRowCount) {
+          notifySound.play();
+        }
+
+        lastRowCount = data.length;
+
+        let html =
+          "<table><tr><th>Parent</th><th>Student</th><th>Status</th><th>Action</th></tr>";
+
+        for (let i = 1; i < data.length; i++) {
+          const status = data[i][2];
+
+          html += "<tr>";
+          html += "<td>" + data[i][0] + "</td>";
+          html += "<td>" + data[i][1] + "</td>";
+
+          if (status === "Waiting") {
+            html += "<td><span class='status-waiting'>Waiting</span></td>";
+            html +=
+              "<td><button class='mark-btn' onclick=\"markPicked('" +
+              data[i][0] +
+              "','" +
+              data[i][1] +
+              "')\">Mark Picked</button></td>";
+          } else {
+            html += "<td><span class='status-picked'>Picked</span></td>";
+            html +=
+              "<td><button class='mark-btn' disabled>Picked</button></td>";
+          }
+
+          html += "</tr>";
+        }
+
+        html += "</table>";
+        dashboardData.innerHTML = html;
+
+        refreshIcon.innerHTML = "";
+      }
+
+      /* AUTO REFRESH EVERY 30 SEC */
+      function startAutoRefresh() {
+        loadDashboard();
+        autoRefresh = setInterval(loadDashboard, 30000);
+      }
+
+      /* MARK PICKED */
+      async function markPicked(parentName, studentName) {
+        await fetch(WEB_APP_URL, {
+          method: "POST",
+          body: JSON.stringify({
+            action: "updateStatus",
+            className: teacherClass.value,
+            parentName: parentName,
+            studentName: studentName,
+          }),
+        });
+        loadDashboard();
+      }
+
+      /* LOGOUT */
+      function logout() {
+        teacherAuthenticated = false;
+        teacherAuthBox.style.display = "block";
+        teacherDashboard.style.display = "none";
+        clearInterval(autoRefresh);
+        clearTimeout(logoutTimer);
+      }
+
+      /* AUTO LOGOUT */
+      function startAutoLogout() {
+        logoutTimer = setTimeout(() => {
+          alert("Session expired");
+          logout();
+        }, 300000000000000000);
+      }
+
+      /* TAB SWITCH */
+      function switchTab(tab) {
+        parentTab.classList.remove("active");
+        teacherTab.classList.remove("active");
+
+        if (tab === "teacher") {
+          parentSection.style.display = "none";
+          teacherSection.style.display = "block";
+          teacherTab.classList.add("active");
+          logout();
+        } else {
+          teacherSection.style.display = "none";
+          parentSection.style.display = "block";
+          parentTab.classList.add("active");
+          logout();
+        }
+      }
+    </script>
+  </body>
+</html>
